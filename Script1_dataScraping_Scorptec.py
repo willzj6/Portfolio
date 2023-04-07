@@ -1,4 +1,4 @@
-import requests, csv, os, re, logging, time
+import requests, csv, os, re, logging, time, configparser
 from bs4 import BeautifulSoup
 from datetime import date
 
@@ -22,7 +22,9 @@ COLUMNS = ['NAME', 'PRODUCTCODE', 'PRICE', 'PROCESSOR', 'MEMORY', 'GRAPHICS', 'S
 
 # Web page setup
 # Header to be sent with request
-headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'}
+config = configparser.ConfigParser()
+config.read('config.ini')
+headers = {'User-Agent': config['Settings']['User-Agent'].strip("'")}
 # URL to website
 mainURL = 'https://www.scorptec.com.au/product/laptops-&-notebooks'
 domainURL = 'https://www.scorptec.com.au'
@@ -60,7 +62,13 @@ def scrapeData(productURL):
     specs['PRICE'] = price.text.strip()
     
     productDesc = productSoup.find(class_="product-page-desc").text
-    productSpecs = productDesc.split(',')
+    # Split by comma, ignore commas in parantheses
+    paren_regex = re.compile(r'\([^()]*\)')
+    s = paren_regex.sub('@', productDesc)
+    productSpecs = s.split(',')
+    productSpecs = [item.replace('@', ',') for item in productSpecs]
+    productSpecs = [item.strip() for item in productSpecs]
+
     # Using Memory to check if the columns are correctly formatted
     if extractMemory(productSpecs[2]) == '':
         if extractMemory(productSpecs[3])!= '':
