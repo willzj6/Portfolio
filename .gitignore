@@ -1,0 +1,9 @@
+.venv/
+.ipynb_checkpoints/
+datasets/
+img_data
+test_notebook.ipynb
+test_script.py
+test_files/
+logs/
+config.ini
